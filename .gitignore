@@ -1,0 +1,18 @@
+# esta es la carpeta que usa bruno para testear los endpoints de la API
+/Bruno
+/API/tmp
+/NiceGUI/src/pages/__pycache__/
+/NiceGUI/src/functions/__pycache__/
+/NiceGUI/.nicegui/
+
+# esto es para no contar el ejecutable que tengo para enviarle a mi papa
+*.exe
+
+# esto es para no enviar los archivos de configuracion
+*.toml
+
+# esto es para no enviar los archivos de release que voy a cargar a github
+*.zip
+
+# esto es para no cargar ninguna base de datos al repositorio
+*.db
