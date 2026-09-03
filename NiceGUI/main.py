@@ -1,13 +1,14 @@
+from nicegui import app, ui
+
 import src.pages.ajustes as pa
-import src.pages.ver_usuarios as pvu
-import src.pages.prestamos as pp
-import src.pages.modificar as fm
+import src.pages.analizar as p_analizar
 import src.pages.cuotas as pc
 import src.pages.deudas as pd
 import src.pages.insertar_boletas as pib
+import src.pages.modificar as fm
+import src.pages.prestamos as pp
 import src.pages.rifas as pr
-
-from nicegui import app, ui
+import src.pages.ver_usuarios as pvu
 
 # Funciones de Estado y Autenticación
 
@@ -222,7 +223,7 @@ def pagina_prestamos():
 @ui.page("/analizar")
 def pagina_analizar():
     layout("Analizar")
-    contenido_principal(render_analisis)
+    contenido_principal(p_analizar.render_analizar)
 
 
 @ui.page("/transferencias")

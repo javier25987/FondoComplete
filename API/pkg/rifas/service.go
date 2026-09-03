@@ -39,6 +39,10 @@ func (s *centralStruct) serviceInsertarBoletas(boletas []Boleta) error {
 }
 
 func (s *centralStruct) serviceEntregarBoletas(id int, boletas []int) error {
+	/*
+		FALTA LA PROTECCION PARA NO REENTREGAR BOLETAS YA ENTREGADAS
+	*/
+
 	estado, err := global.UserIsActive(s.Conexion, id)
 	if err != nil {
 		return fmt.Errorf("No se pudo rectificar el estado del usuario >> %v", err)

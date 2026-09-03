@@ -4,9 +4,13 @@
 
 - todas las fechas de la api van a estar en formato `Año-Mes-Dia Hora:Minutos`
 
+## notas importantes
+
+> recrear la tabla de los cheques de rifas con la llave de las rifas creadas
+
 ## Ends points
 
-28/36
+28/37
 
 ### Generales
 
@@ -25,6 +29,7 @@
 #### analisis
 + [ ] `/analizar` GET -> devuelve el analisis general del programa
 + [ ] `/analizar/{id}` GET -> devuelve el analisis del usuario en cuestion
++ [ ] `/analizar/boletas` GET -> devuelve el analisis general de las boletas
 
 #### transferencias 
 + [ ] `/transferencias` GET -> retorna todas las transferencias de todos los usuarios

@@ -3,6 +3,7 @@ package main
 import (
 	"API-FONDO/ajustes"
 	ajustes_http "API-FONDO/pkg/ajustes"
+	"API-FONDO/pkg/analizar"
 	"API-FONDO/pkg/cuotas"
 	"API-FONDO/pkg/deudas"
 	"API-FONDO/pkg/modificar"
@@ -70,6 +71,7 @@ func main() {
 	hDeudas := deudas.NewCentralStruct(progConfig, db)
 	hVer := verusuaios.NewCentralStruct(progConfig, db)
 	hRifas := rifas.NewCentralStruct(progConfig, db)
+	hAnalizar := analizar.NewCentralStruct(progConfig, db)
 
 	/*
 		Creamos todos los endpoints necesarios para el sistema
@@ -87,7 +89,8 @@ func main() {
 		http.ServeFile(w, r, "./documents/carta.pdf")
 	})
 
-	// // Analisis
+	// Analisis
+	http.HandleFunc("/analizar/boletas", hAnalizar.RutaAnalizarBoletas)
 	// http.HandleFunc("/analizar", void)
 	// http.HandleFunc("/analizar/", void)
 

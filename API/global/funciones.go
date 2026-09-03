@@ -21,8 +21,7 @@ func UserIsActive(db *sql.DB, id int) (bool, error) {
 
 	var isActive bool
 	q := `SELECT u.estado FROM usuarios u WHERE u.id = $1`
-	err := db.QueryRow(q, id).Scan(&isActive)
-	if err != nil {
+	if err := db.QueryRow(q, id).Scan(&isActive); err != nil {
 		return false, err
 	}
 	return isActive, nil
@@ -56,6 +55,10 @@ func ObtenerCalendarioTime(db *sql.DB) (map[int]time.Time, error) {
 		calendario[semana] = fecha
 	}
 
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("Hubo en error en la ejecucion del bucle >> %v", err)
+	}
+
 	return calendario, nil
 }
 
@@ -78,6 +81,10 @@ func ObtenerCalendarioStr(db *sql.DB) (map[int]string, error) {
 		}
 
 		calendario[semana] = fecha
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("Hubo en error en la ejecucion del bucle >> %v", err)
 	}
 
 	return calendario, nil

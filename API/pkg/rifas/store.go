@@ -88,7 +88,7 @@ func (s *centralStruct) storeInsertarBoletas(boletas []Boleta) error {
 }
 
 func (s *centralStruct) storeBoletasLibres() ([]Boleta, error) {
-	q := `select br.codigo_boleta, br.boleta from boletas_rifas br where br.dada_a is null and br.codigo_rifa = ? order by br.codigo_boleta`
+	q := `select br.codigo_boleta, br.boleta from boletas_rifas br where br.entrega is null and br.codigo_rifa = ? order by br.codigo_boleta`
 	rows, err := s.Conexion.Query(q, s.Ajustes.Rifas.RifaAct)
 	if err != nil {
 		return nil, fmt.Errorf("No se pudieron obtener boletas las boletas libres >> %q", err)
@@ -157,7 +157,7 @@ func (s *centralStruct) storeObtenerDatosDelUsuario(id int) (*FormatoGet, error)
 	}
 
 	// Boletas Disponibles
-	q = `select br.codigo_boleta from boletas_rifas br where br.dada_a is null and br.codigo_rifa = ? order by br.codigo_boleta`
+	q = `select br.codigo_boleta from boletas_rifas br where br.entrega is null and br.codigo_rifa = ? order by br.codigo_boleta`
 	rows, err := s.Conexion.Query(q, s.Ajustes.Rifas.RifaAct)
 	if err != nil {
 		return nil, fmt.Errorf("No se pudieron obtener boletas las boletas libres >> %q", err)
@@ -168,7 +168,7 @@ func (s *centralStruct) storeObtenerDatosDelUsuario(id int) (*FormatoGet, error)
 
 	for rows.Next() {
 		if err := rows.Scan(&codigo); err != nil {
-			return nil, fmt.Errorf("No se pudo obtner la boleta libre >> %q", err)
+			return nil, fmt.Errorf("No se pudo obtener la boleta libre >> %q", err)
 		}
 
 		user.BoletasDisponibles = append(user.BoletasDisponibles, codigo)
@@ -185,7 +185,17 @@ func (s *centralStruct) storeObtenerDatosDelUsuario(id int) (*FormatoGet, error)
 	}
 
 	// Boletas Entregadas
-	q = `SELECT br.boleta FROM boletas_rifas br WHERE br.dada_a = ? order by br.codigo_boleta`
+	q = `
+		SELECT
+			br.boleta
+		FROM boletas_rifas br 
+		JOIN entregas_de_boletas edb 
+		ON 
+			edb.codigo = br.entrega
+		WHERE 
+			edb.entrega_a = ?
+		ORDER BY br.codigo_boleta;
+	`
 	rows1, err := s.Conexion.Query(q, id)
 	if err != nil {
 		return nil, fmt.Errorf("No se pudo obtener las boletas dadas al usuario >> %v", err)
@@ -203,7 +213,7 @@ func (s *centralStruct) storeObtenerDatosDelUsuario(id int) (*FormatoGet, error)
 	}
 
 	if err := rows1.Err(); err != nil {
-		return nil, fmt.Errorf("Hubo un error al escaneal los balores dentro del bucle rows1 >> %v", err)
+		return nil, fmt.Errorf("Hubo un error al escanear los balores dentro del bucle rows1 >> %v", err)
 	}
 
 	// retornal los valores
@@ -287,17 +297,30 @@ func (s *centralStruct) storeEntregarBoletas(id int, boletas []int) error {
 		return fmt.Errorf("No se pudo actualizar la deuda por las boletas >> %v", err)
 	}
 
+	// creamos la entrega
+	q = `INSERT INTO entregas_de_boletas (entrega_a, en_rifa) VALUES (?,?);`
+
+	result, err := tx.Exec(q, id, s.Ajustes.Rifas.RifaAct)
+	if err != nil {
+		return fmt.Errorf("No se pudo crear la entrega de las boletas >> %v", err)
+	}
+
+	codigo, err := result.LastInsertId()
+	if err != nil {
+		return fmt.Errorf("No se pudo obtener el codigo de la entrega >> %v", err)
+	}
+
 	// entregamos las boletas
 	q = `
 		UPDATE boletas_rifas
 		SET 
-			dada_a = ?
+			entrega = ?
 		WHERE 
 			codigo_rifa = ? AND codigo_boleta = ?
 	`
 	for _, boleta := range boletas {
-		if _, err := tx.Exec(q, id, s.Ajustes.Rifas.RifaAct, boleta); err != nil {
-			return fmt.Errorf("No se puede dar la boleta %d al usuario >> %v", boleta, err)
+		if _, err := tx.Exec(q, codigo, s.Ajustes.Rifas.RifaAct, boleta); err != nil {
+			return fmt.Errorf("No se puede registrar la boleta %d en la entrega >> %v", boleta, err)
 		}
 	}
 

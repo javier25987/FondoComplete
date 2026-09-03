@@ -124,7 +124,8 @@ create table cheques_de_rifas (
   en_rifa integer,
   fecha datetime default (datetime('now', 'localtime')),
 
-  foreign key (id_user) references usuarios(id)
+  foreign key (id_user) references usuarios(id),
+  foreign key (en rifa) references datos_de_rifas(codigo)
 );
 
 create table cheques_de_prestamos (
@@ -135,9 +136,9 @@ create table cheques_de_prestamos (
   deuda_antes integer,
   deuda_despues integer,
   fecha datetime default (datetime('now', 'localtime')),
-  -- tipo text,
-  -- intereses_antes integer,
-  -- intereses_despues integer,
+  tipo text,
+  intereses_antes integer,
+  intereses_despues integer,
 
   foreign key (id_user) references usuarios(id),
   foreign key (codigo_prestamo) references prestamos_hechos(codigo)
@@ -151,15 +152,36 @@ create table notas_de_prestamos (
   foreign key (codigo_prestamo) references prestamos_hechos(codigo)
 );
 
+-- create table boletas_rifas (
+--   codigo_rifa integer,
+--   codigo_boleta integer,
+--   boleta text,
+--   dada_a integer,
+
+--   foreign key (dada_a) references usuarios(id),
+--   foreign key (codigo_rifa) references datos_de_rifas(codigo),
+--   unique(codigo_rifa, boleta)
+-- );
+
 create table boletas_rifas (
   codigo_rifa integer,
   codigo_boleta integer,
   boleta text,
-  dada_a integer,
+  entrega integer,
 
-  foreign key (dada_a) references usuarios(id),
+  foreign key (entrega) references entregas_de_boletas(codigo),
   foreign key (codigo_rifa) references datos_de_rifas(codigo),
   unique(codigo_rifa, boleta)
+);
+
+CREATE TABLE entregas_de_boletas (
+  codigo integer primary key autoincrement,
+  entrega_a integer,
+  en_rifa integer,
+  fecha date default (date('now', 'localtime')),
+	
+  FOREIGN KEY (entrega_a) REFERENCES usuarios(id),
+  FOREIGN KEY (en_rifa) REFERENCES datos_de_rifas(codigo)
 );
 
 /*

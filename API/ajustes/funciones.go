@@ -14,8 +14,7 @@ const ConfigPath = "./setings.toml"
 func AbrirAjustes() (*Ajustes, error) {
 	ajustes := Ajustes{}
 
-	_, err := toml.DecodeFile(ConfigPath, &ajustes)
-	if err != nil {
+	if _, err := toml.DecodeFile(ConfigPath, &ajustes); err != nil {
 		return nil, fmt.Errorf("No se pueden abrir los ajustes >> %q", err)
 	}
 
