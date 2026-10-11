@@ -10,7 +10,7 @@
 
 ## Ends points
 
-28/37
+29/37
 
 ### Generales
 
@@ -29,7 +29,7 @@
 #### analisis
 + [ ] `/analizar` GET -> devuelve el analisis general del programa
 + [ ] `/analizar/{id}` GET -> devuelve el analisis del usuario en cuestion
-+ [ ] `/analizar/boletas` GET -> devuelve el analisis general de las boletas
++ [X] `/analizar/boletas` GET -> devuelve el analisis general de las boletas
 
 #### transferencias 
 + [ ] `/transferencias` GET -> retorna todas las transferencias de todos los usuarios

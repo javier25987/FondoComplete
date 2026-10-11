@@ -2,13 +2,18 @@ package cuotas
 
 import (
 	"API-FONDO/global"
+	"API-FONDO/pkg/logs"
 	"errors"
+	"fmt"
 )
 
 func (s *centralStruct) serviceObtenerUsuario(id int) (*User, error) {
 	if id < 1 || id > s.Ajustes.Usuarios.Count {
 		return nil, errors.New("El ID proporcionado no pertenece a ningun usuario del sistema")
 	}
+
+	logMsg := fmt.Sprintf("Se consulto al usuario %d", id)
+	logs.RegistrarLog(logMsg)
 
 	err := s.storeRectificarAsuntos(id)
 	if err != nil {

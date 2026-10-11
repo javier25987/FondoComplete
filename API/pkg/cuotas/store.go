@@ -2,11 +2,11 @@ package cuotas
 
 import (
 	"API-FONDO/global"
+	"API-FONDO/pkg/logs"
 	"fmt"
 	"strconv"
 	"time"
-
-	_ "time/tzdata"
+	// _ "time/tzdata"
 )
 
 func (s *centralStruct) storeObtenerDatosUser(id int) (*User, error) {
@@ -63,6 +63,10 @@ func (s *centralStruct) storeObtenerDatosUser(id int) (*User, error) {
 		user.ChequesUser = append(user.ChequesUser, codigo)
 	}
 
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("Hubo un error en el ciclo rows >> %v", err)
+	}
+
 	return user, nil
 }
 
@@ -110,6 +114,10 @@ func (s *centralStruct) ObtenerTablaCuotasYMultas(id int) ([]*Semana, int, int, 
 		cuotas[semana] = "🔒 bloc"
 	}
 
+	if err := rows1.Err(); err != nil {
+		return nil, -1, -1, err
+	}
+
 	cuotas_a_pagar := 50 - (pagas + bloqueos)
 
 	idx := 0
@@ -154,6 +162,10 @@ func (s *centralStruct) ObtenerTablaCuotasYMultas(id int) ([]*Semana, int, int, 
 		multas_a_pagar += valor
 	}
 
+	if err := rows2.Err(); err != nil {
+		return nil, -1, -1, err
+	}
+
 	q = `SELECT cmp.semana, cmp.valor FROM cuotas_multas_pagas cmp WHERE cmp.id_user = ?`
 	rows3, err := s.Conexion.Query(q, id)
 	if err != nil {
@@ -166,6 +178,10 @@ func (s *centralStruct) ObtenerTablaCuotasYMultas(id int) ([]*Semana, int, int, 
 			return nil, 0, 0, err
 		}
 		multas_pgs[semana] = strconv.Itoa(valor)
+	}
+
+	if err := rows3.Err(); err != nil {
+		return nil, -1, -1, err
 	}
 
 	salida := make([]*Semana, 50)
@@ -273,6 +289,10 @@ func (s *centralStruct) storePagarSemanas(id int, formato *FormatoPago) (int, er
 			}
 		}
 
+		if err := rows1.Err(); err != nil {
+			return -1, err
+		}
+
 		// Escribimos en multas activas las nuevas multas del usuario
 
 		q = `UPDATE cuotas_multas_activas SET valor = ? WHERE id_user = ? AND semana = ?`
@@ -371,15 +391,17 @@ func (s *centralStruct) storeRectificarAsuntos(id int) error {
 	}
 
 	if semanas_revisadas >= 50 { // no hacer nada si ya todas las semanas fueron revisadas
+		logMsg := fmt.Sprintf("No fue necesario revisar los asuntos del usuario %d", id)
+		logs.RegistrarLog(logMsg)
 		return nil
 	}
 
-	loc, err := time.LoadLocation("America/Bogota")
-	if err != nil {
-		return fmt.Errorf("store >> Error cargando zona horaria: %v", err)
-	}
+	// loc, err := time.LoadLocation("America/Bogota")
+	// if err != nil {
+	// 	return fmt.Errorf("store >> Error cargando zona horaria: %v", err)
+	// }
 
-	fecha_actual := time.Now().In(loc)
+	fecha_actual := time.Now() //.In(loc)
 
 	var semanas_a_revisar int
 
@@ -391,6 +413,14 @@ func (s *centralStruct) storeRectificarAsuntos(id int) error {
 	}
 
 	if semanas_a_revisar > semanas_revisadas {
+		logMsg := fmt.Sprintf( // creamos el log de la operacion
+			"Fue necesario arreglar los asuntos del usuario %d por %d semana(s), la fecha de comparacion es |%s|",
+			id,
+			semanas_a_revisar-semanas_revisadas,
+			fecha_actual.Format("2006-01-02 15:04:05"),
+		)
+		logs.RegistrarLog(logMsg)
+
 		semanas_array := [50]int{}
 
 		/*
@@ -412,6 +442,10 @@ func (s *centralStruct) storeRectificarAsuntos(id int) error {
 				return err
 			}
 			semanas_array[idx] = -1
+		}
+
+		if err := rows1.Err(); err != nil {
+			return err
 		}
 
 		var semanas_pagas int
@@ -483,6 +517,9 @@ func (s *centralStruct) storeRectificarAsuntos(id int) error {
 		if _, err := tx.Exec(q, id); err != nil {
 			return fmt.Errorf("Rectificar asuntos: no se pudo limpiar multas pagas >> %v", err)
 		}
+	} else {
+		logMsg := fmt.Sprintf("La revision del usuario %d esta al dia", id)
+		logs.RegistrarLog(logMsg)
 	}
 
 	return tx.Commit()
